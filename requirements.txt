@@ -1,0 +1,4 @@
+# Core Python simulation and offline HTML viewer use only Python standard library.
+# Optional live dashboard (app.py):
+streamlit>=1.30,<2
+plotly>=5.20,<7

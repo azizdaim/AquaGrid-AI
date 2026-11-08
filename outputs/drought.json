@@ -1,0 +1,833 @@
+{
+  "key": "drought",
+  "scenario": "Severe Water Shortage",
+  "description": "Reservoir supply falls to 65%; coordinator prioritizes the hospital.",
+  "metrics": {
+    "total_supply": 858,
+    "total_demand": 1100,
+    "delivered": 858,
+    "unmet": 242,
+    "satisfaction_pct": 78.0,
+    "min_district_satisfaction_pct": 60.9,
+    "hospital_satisfaction_pct": 100.0,
+    "transfers": 43,
+    "failed_pipes": 0
+  },
+  "districts": [
+    {
+      "id": "D_W",
+      "label": "West",
+      "demand": 170,
+      "delivered": 138,
+      "satisfaction_pct": 81.2,
+      "unmet": 32,
+      "critical": false,
+      "priority": 2
+    },
+    {
+      "id": "D_H",
+      "label": "Hospital",
+      "demand": 180,
+      "delivered": 180,
+      "satisfaction_pct": 100.0,
+      "unmet": 0,
+      "critical": true,
+      "priority": 10
+    },
+    {
+      "id": "D_C",
+      "label": "Central",
+      "demand": 230,
+      "delivered": 140,
+      "satisfaction_pct": 60.9,
+      "unmet": 90,
+      "critical": false,
+      "priority": 4
+    },
+    {
+      "id": "D_U",
+      "label": "University",
+      "demand": 150,
+      "delivered": 140,
+      "satisfaction_pct": 93.3,
+      "unmet": 10,
+      "critical": false,
+      "priority": 5
+    },
+    {
+      "id": "D_E",
+      "label": "East",
+      "demand": 200,
+      "delivered": 140,
+      "satisfaction_pct": 70.0,
+      "unmet": 60,
+      "critical": false,
+      "priority": 3
+    },
+    {
+      "id": "D_I",
+      "label": "Industrial",
+      "demand": 170,
+      "delivered": 120,
+      "satisfaction_pct": 70.6,
+      "unmet": 50,
+      "critical": false,
+      "priority": 1
+    }
+  ],
+  "reservoirs": [
+    {
+      "id": "R_N",
+      "label": "North Reservoir",
+      "initial": 500,
+      "remaining": 0,
+      "released": 500
+    },
+    {
+      "id": "R_S",
+      "label": "South Reservoir",
+      "initial": 358,
+      "remaining": 0,
+      "released": 358
+    }
+  ],
+  "nodes": [
+    {
+      "id": "R_N",
+      "label": "North Reservoir",
+      "kind": "reservoir",
+      "x": 9,
+      "y": 82
+    },
+    {
+      "id": "R_S",
+      "label": "South Reservoir",
+      "kind": "reservoir",
+      "x": 10,
+      "y": 18
+    },
+    {
+      "id": "J_W",
+      "label": "West Junction",
+      "kind": "junction",
+      "x": 35,
+      "y": 80
+    },
+    {
+      "id": "J_C",
+      "label": "Central Junction",
+      "kind": "junction",
+      "x": 45,
+      "y": 48
+    },
+    {
+      "id": "J_E",
+      "label": "East Junction",
+      "kind": "junction",
+      "x": 35,
+      "y": 15
+    },
+    {
+      "id": "D_W",
+      "label": "West",
+      "kind": "district",
+      "x": 74,
+      "y": 91
+    },
+    {
+      "id": "D_H",
+      "label": "Hospital",
+      "kind": "district",
+      "x": 85,
+      "y": 73
+    },
+    {
+      "id": "D_C",
+      "label": "Central",
+      "kind": "district",
+      "x": 84,
+      "y": 55
+    },
+    {
+      "id": "D_U",
+      "label": "University",
+      "kind": "district",
+      "x": 83,
+      "y": 40
+    },
+    {
+      "id": "D_E",
+      "label": "East",
+      "kind": "district",
+      "x": 82,
+      "y": 21
+    },
+    {
+      "id": "D_I",
+      "label": "Industrial",
+      "kind": "district",
+      "x": 70,
+      "y": 5
+    }
+  ],
+  "pipes": [
+    {
+      "a": "R_N",
+      "b": "J_C",
+      "capacity": 650,
+      "used": 400,
+      "active": true,
+      "cost": 2
+    },
+    {
+      "a": "R_N",
+      "b": "J_W",
+      "capacity": 280,
+      "used": 100,
+      "active": true,
+      "cost": 1
+    },
+    {
+      "a": "R_S",
+      "b": "J_E",
+      "capacity": 520,
+      "used": 260,
+      "active": true,
+      "cost": 2
+    },
+    {
+      "a": "R_S",
+      "b": "J_C",
+      "capacity": 300,
+      "used": 98,
+      "active": true,
+      "cost": 3
+    },
+    {
+      "a": "J_C",
+      "b": "J_W",
+      "capacity": 230,
+      "used": 38,
+      "active": true,
+      "cost": 2
+    },
+    {
+      "a": "J_C",
+      "b": "J_E",
+      "capacity": 300,
+      "used": 0,
+      "active": true,
+      "cost": 2
+    },
+    {
+      "a": "J_W",
+      "b": "J_E",
+      "capacity": 120,
+      "used": 0,
+      "active": true,
+      "cost": 5
+    },
+    {
+      "a": "J_W",
+      "b": "D_W",
+      "capacity": 220,
+      "used": 138,
+      "active": true,
+      "cost": 1
+    },
+    {
+      "a": "J_C",
+      "b": "D_H",
+      "capacity": 240,
+      "used": 180,
+      "active": true,
+      "cost": 1
+    },
+    {
+      "a": "J_E",
+      "b": "D_H",
+      "capacity": 110,
+      "used": 0,
+      "active": true,
+      "cost": 4
+    },
+    {
+      "a": "J_C",
+      "b": "D_C",
+      "capacity": 270,
+      "used": 140,
+      "active": true,
+      "cost": 1
+    },
+    {
+      "a": "J_W",
+      "b": "D_C",
+      "capacity": 120,
+      "used": 0,
+      "active": true,
+      "cost": 3
+    },
+    {
+      "a": "J_C",
+      "b": "D_U",
+      "capacity": 210,
+      "used": 140,
+      "active": true,
+      "cost": 2
+    },
+    {
+      "a": "J_E",
+      "b": "D_U",
+      "capacity": 120,
+      "used": 0,
+      "active": true,
+      "cost": 4
+    },
+    {
+      "a": "J_E",
+      "b": "D_E",
+      "capacity": 280,
+      "used": 140,
+      "active": true,
+      "cost": 1
+    },
+    {
+      "a": "J_E",
+      "b": "D_I",
+      "capacity": 270,
+      "used": 120,
+      "active": true,
+      "cost": 2
+    }
+  ],
+  "transfers": [
+    {
+      "source": "R_N",
+      "destination": "D_H",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_H"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_H",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_H"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_H",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_H"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_H",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_H"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_H",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_H"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_H",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_H"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_H",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_H"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_H",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_H"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_H",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_H"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_U",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_U"
+      ],
+      "path_cost": 4.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_C",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_C"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_E",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_E",
+        "D_E"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_W",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_W",
+        "D_W"
+      ],
+      "path_cost": 2.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_I",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_E",
+        "D_I"
+      ],
+      "path_cost": 4.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_U",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_U"
+      ],
+      "path_cost": 4.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_C",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_C"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_E",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_E",
+        "D_E"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_W",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_W",
+        "D_W"
+      ],
+      "path_cost": 2.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_I",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_E",
+        "D_I"
+      ],
+      "path_cost": 4.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_U",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_U"
+      ],
+      "path_cost": 4.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_C",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_C"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_E",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_E",
+        "D_E"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_W",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_W",
+        "D_W"
+      ],
+      "path_cost": 2.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_I",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_E",
+        "D_I"
+      ],
+      "path_cost": 4.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_U",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_U"
+      ],
+      "path_cost": 4.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_C",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_C"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_E",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_E",
+        "D_E"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_W",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_W",
+        "D_W"
+      ],
+      "path_cost": 2.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_I",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_E",
+        "D_I"
+      ],
+      "path_cost": 4.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_U",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_U"
+      ],
+      "path_cost": 4.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_C",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_C"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_E",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_E",
+        "D_E"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_W",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_W",
+        "D_W"
+      ],
+      "path_cost": 2.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_I",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_E",
+        "D_I"
+      ],
+      "path_cost": 4.0
+    },
+    {
+      "source": "R_N",
+      "destination": "D_U",
+      "units": 20,
+      "path": [
+        "R_N",
+        "J_C",
+        "D_U"
+      ],
+      "path_cost": 4.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_C",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_C",
+        "D_C"
+      ],
+      "path_cost": 4.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_E",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_E",
+        "D_E"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_W",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_C",
+        "J_W",
+        "D_W"
+      ],
+      "path_cost": 6.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_I",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_E",
+        "D_I"
+      ],
+      "path_cost": 4.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_U",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_C",
+        "D_U"
+      ],
+      "path_cost": 5.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_C",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_C",
+        "D_C"
+      ],
+      "path_cost": 4.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_E",
+      "units": 20,
+      "path": [
+        "R_S",
+        "J_E",
+        "D_E"
+      ],
+      "path_cost": 3.0
+    },
+    {
+      "source": "R_S",
+      "destination": "D_W",
+      "units": 18,
+      "path": [
+        "R_S",
+        "J_C",
+        "J_W",
+        "D_W"
+      ],
+      "path_cost": 6.0
+    }
+  ],
+  "decision_log": [
+    "District agents broadcast demands; reservoir agents broadcast supply offers.",
+    "Coordinator assigned 20 units to D_H via R_N: R_N \u2192 J_C \u2192 D_H",
+    "Coordinator assigned 20 units to D_H via R_N: R_N \u2192 J_C \u2192 D_H",
+    "Coordinator assigned 20 units to D_H via R_N: R_N \u2192 J_C \u2192 D_H",
+    "Coordinator assigned 20 units to D_H via R_N: R_N \u2192 J_C \u2192 D_H",
+    "Coordinator assigned 20 units to D_H via R_N: R_N \u2192 J_C \u2192 D_H",
+    "Coordinator assigned 20 units to D_H via R_N: R_N \u2192 J_C \u2192 D_H",
+    "Coordinator assigned 20 units to D_H via R_N: R_N \u2192 J_C \u2192 D_H",
+    "Coordinator assigned 20 units to D_H via R_N: R_N \u2192 J_C \u2192 D_H",
+    "Coordinator assigned 20 units to D_H via R_N: R_N \u2192 J_C \u2192 D_H",
+    "Coordinator assigned 20 units to D_U via R_N: R_N \u2192 J_C \u2192 D_U",
+    "Coordinator assigned 20 units to D_C via R_N: R_N \u2192 J_C \u2192 D_C",
+    "Coordinator assigned 20 units to D_E via R_S: R_S \u2192 J_E \u2192 D_E",
+    "Coordinator assigned 20 units to D_W via R_N: R_N \u2192 J_W \u2192 D_W",
+    "Coordinator assigned 20 units to D_I via R_S: R_S \u2192 J_E \u2192 D_I",
+    "Coordinator assigned 20 units to D_U via R_N: R_N \u2192 J_C \u2192 D_U",
+    "Coordinator assigned 20 units to D_C via R_N: R_N \u2192 J_C \u2192 D_C",
+    "Coordinator assigned 20 units to D_E via R_S: R_S \u2192 J_E \u2192 D_E",
+    "Coordinator assigned 20 units to D_W via R_N: R_N \u2192 J_W \u2192 D_W",
+    "Coordinator assigned 20 units to D_I via R_S: R_S \u2192 J_E \u2192 D_I",
+    "Coordinator assigned 20 units to D_U via R_N: R_N \u2192 J_C \u2192 D_U",
+    "Coordinator assigned 20 units to D_C via R_N: R_N \u2192 J_C \u2192 D_C",
+    "Coordinator assigned 20 units to D_E via R_S: R_S \u2192 J_E \u2192 D_E",
+    "Coordinator assigned 20 units to D_W via R_N: R_N \u2192 J_W \u2192 D_W",
+    "Coordinator assigned 20 units to D_I via R_S: R_S \u2192 J_E \u2192 D_I",
+    "Coordinator assigned 20 units to D_U via R_N: R_N \u2192 J_C \u2192 D_U",
+    "Coordinator assigned 20 units to D_C via R_N: R_N \u2192 J_C \u2192 D_C",
+    "Coordinator assigned 20 units to D_E via R_S: R_S \u2192 J_E \u2192 D_E",
+    "Coordinator assigned 20 units to D_W via R_N: R_N \u2192 J_W \u2192 D_W",
+    "Coordinator assigned 20 units to D_I via R_S: R_S \u2192 J_E \u2192 D_I",
+    "Coordinator assigned 20 units to D_U via R_N: R_N \u2192 J_C \u2192 D_U",
+    "Coordinator assigned 20 units to D_C via R_N: R_N \u2192 J_C \u2192 D_C",
+    "Coordinator assigned 20 units to D_E via R_S: R_S \u2192 J_E \u2192 D_E",
+    "Coordinator assigned 20 units to D_W via R_N: R_N \u2192 J_W \u2192 D_W",
+    "Coordinator assigned 20 units to D_I via R_S: R_S \u2192 J_E \u2192 D_I",
+    "Coordinator assigned 20 units to D_U via R_N: R_N \u2192 J_C \u2192 D_U",
+    "Coordinator assigned 20 units to D_C via R_S: R_S \u2192 J_C \u2192 D_C",
+    "Coordinator assigned 20 units to D_E via R_S: R_S \u2192 J_E \u2192 D_E",
+    "Coordinator assigned 20 units to D_W via R_S: R_S \u2192 J_C \u2192 J_W \u2192 D_W",
+    "Coordinator assigned 20 units to D_I via R_S: R_S \u2192 J_E \u2192 D_I",
+    "Coordinator assigned 20 units to D_U via R_S: R_S \u2192 J_C \u2192 D_U",
+    "Coordinator assigned 20 units to D_C via R_S: R_S \u2192 J_C \u2192 D_C",
+    "Coordinator assigned 20 units to D_E via R_S: R_S \u2192 J_E \u2192 D_E",
+    "Coordinator assigned 18 units to D_W via R_S: R_S \u2192 J_C \u2192 J_W \u2192 D_W",
+    "No more feasible requests; allocation cycle complete."
+  ],
+  "limitations": [
+    "One allocation timestep only; no pressure, time-delay or fluid dynamics.",
+    "Synthetic graph and water units, not real city infrastructure data.",
+    "Priority-first round-robin is a heuristic, not an optimal policy.",
+    "No probabilistic sensor model or rigorous baseline comparison yet."
+  ]
+}
