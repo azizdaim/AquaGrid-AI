@@ -12,11 +12,14 @@
 
 ## Demo script: 60-90 seconds
 
-1. **Show the network**: "This is a fictional city, not a physical hydraulic model. We created reservoirs, junctions, six districts and limited-capacity connections."
-2. **Explain the AI**: "District agents request water, reservoir agents offer supply, the network agent searches feasible routes using A*, and the coordinator makes allocation decisions."
-3. **Select the hospital pipe-failure scenario**: "The direct route is now disabled. A* searches for a different path and routes limited water from the South Reservoir through the East Junction to the Hospital."
-4. **Show measured output**: "The total delivered falls from 100% to 93.6%. The hospital gets 110/180 units because the backup pipe has limited throughput. The model respects the pipe limit."
-5. **End with next milestone**: "Next we will compare coordination against a fixed allocation baseline, expand testing and develop a truly live simulation dashboard."
+Open `AquaGrid_Demo.html` (full screen). Keys `1`–`5` switch scenarios; each switch auto-plays the allocation.
+
+1. **Show the network** (key `1`): "This is a fictional city, not a physical hydraulic model: two reservoirs, three junctions, six districts and capacity-limited pipes. Ring around each district = share of its demand met."
+2. **Explain the AI**: "District agents request water, reservoir agents offer supply, the network agent finds routes using A*, and the coordinator serves the hospital first and then the other districts round-robin. Each pulse on the map is one 20-unit dispatch." Point to the agent diagram near the bottom.
+3. **Hospital pipe failure** (key `2`): "The direct pipe is marked failed. Watch the first dispatches: A* reroutes South Reservoir → East Junction → Hospital." Click the Hospital to show the route inspector.
+4. **Show the measured output**: "Total delivered falls from 100% to 93.6%. The hospital gets 110/180 because the backup pipe (shown violet, at capacity) carries at most 110 units. The model respects that limit." Point to the Key finding panel.
+5. **Stress test** (key `5`): "Combined crisis: 55.7% total, but round-robin spreads the shortfall instead of cutting one district off completely." Point to the comparison chart.
+6. **End with next milestone**: the bottom panels list what is delivered, what is next (baselines, multi-timestep, negotiation) and the limitations.
 
 ## What is not done
 - Multi-step stateful simulation, physical water pressure, sensor noise/Bayesian inference, optimized CSP allocation, baseline comparisons, quantitative recovery-time metrics and experimental replication.

@@ -91,9 +91,15 @@ python3 demo.py --all
 
 ### Option C: Offline scenario explorer
 
-Open **`AquaGrid_Demo.html`** in a browser. This is an interactive viewer of **precomputed** simulation outputs, not a live Python execution environment.
+Open **`AquaGrid_Demo.html`** in a browser (no install or internet connection needed). It replays **precomputed** engine output step by step:
 
-To regenerate the exported scenario data and HTML:
+- animated playback of every coordinator dispatch on the network map (play / pause / scrub / speed)
+- click a district to inspect the A* routes used to supply it; hover pipes and nodes for loads and capacities
+- auto-generated findings, a live decision log, and a cross-scenario comparison chart
+- keyboard shortcuts: `1`–`5` scenario, `Space` play/pause, `←`/`→` step, `R` replay
+- deep links, e.g. `AquaGrid_Demo.html#pipe_failure`
+
+It is not a live Python execution environment. The page layout lives in `demo_template.html`; to regenerate the scenario data, re-run the tests and rebuild the HTML:
 
 ```bash
 python3 export_demo.py
@@ -139,7 +145,8 @@ AquaGrid-AI/
 ├── outputs/               # Generated scenario data
 ├── app.py                 # Streamlit dashboard
 ├── demo.py                # Command-line interface
-├── export_demo.py         # Offline scenario exporter
+├── export_demo.py         # Offline scenario exporter (runs engine + tests)
+├── demo_template.html     # Layout for the offline viewer
 ├── AquaGrid_Demo.html     # Offline interactive viewer
 ├── preview.png            # Network visualization
 ├── requirements.txt

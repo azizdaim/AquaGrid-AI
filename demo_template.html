@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="AquaGrid AI: multi-agent water distribution prototype (CS3081 Milestone 01)">
+<title>AquaGrid AI | Milestone 01</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#06111f;--surface:#0b1d2e;--surface-2:#0f2638;--surface-3:#133047;
+  --border:#1d3a4e;--border-strong:#2b5167;
+  --text:#ecf6fa;--text-2:#b4cad6;--muted:#7f9bad;
+  --mint:#4fdcc5;--blue:#68b8ef;--amber:#f2b866;--red:#ff6b80;--violet:#b49cff;
+  --good:#4fdcc5;--warn:#f2b866;--bad:#ff6b80;
+  --radius:16px;--radius-sm:10px;
+  --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+body{background-image:radial-gradient(ellipse 60% 40% at 100% 0%,rgba(30,170,190,.14),transparent 70%),radial-gradient(ellipse 50% 35% at 0% 100%,rgba(60,120,220,.10),transparent 80%);min-height:100vh}
+button{font:inherit;color:inherit}
+.wrap{max-width:1440px;margin:0 auto;padding:22px 32px 48px}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* Top bar */
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:12px;font-size:22px;font-weight:800;letter-spacing:-.6px}
+.brand-mark{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,#22d8bd,#2b7fc0);box-shadow:0 6px 20px rgba(34,200,190,.25)}
+.brand span{color:var(--mint)}
+.badges{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.badge{border:1px solid var(--border-strong);border-radius:999px;padding:6px 12px;color:var(--text-2);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;display:inline-flex;align-items:center;gap:7px}
+.badge .dot{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px rgba(79,220,197,.18)}
+.badge.fail .dot{background:var(--bad)}
+
+/* Hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:32px;align-items:end;margin:32px 0 26px}
+.eyebrow{color:var(--mint);font-size:12px;letter-spacing:2.4px;font-weight:800;text-transform:uppercase}
+h1{font-size:clamp(30px,3.4vw,46px);letter-spacing:-1.5px;line-height:1.08;margin:10px 0 12px}
+.lede{color:var(--text-2);font-size:15.5px;max-width:640px;margin:0}
+.rq{border:1px solid var(--border);background:linear-gradient(150deg,rgba(79,220,197,.08),rgba(104,184,239,.04));border-radius:var(--radius);padding:18px 20px}
+.rq .k{font-size:11px;letter-spacing:1.6px;font-weight:800;color:var(--mint);text-transform:uppercase}
+.rq p{margin:6px 0 0;font-size:15px;line-height:1.55}
+.rq .facts{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--muted)}
+.rq .facts b{color:var(--text);font-size:14px;margin-right:4px}
+
+/* Scenario tabs */
+.section-label{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:0 0 10px}
+.section-label h2{font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);margin:0;font-weight:800}
+.kbd-hint{font-size:11.5px;color:var(--muted)}
+kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:5px;padding:1px 5px;color:var(--text-2);background:var(--surface)}
+.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.tab{position:relative;text-align:left;cursor:pointer;border:1px solid var(--border);background:var(--surface);border-radius:14px;padding:13px 14px 12px;transition:border-color .2s,background .2s,transform .15s}
+.tab:hover{border-color:var(--border-strong);transform:translateY(-1px)}
+.tab:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.tab[aria-selected="true"]{border-color:var(--mint);background:linear-gradient(160deg,rgba(79,220,197,.13),var(--surface) 70%);box-shadow:0 8px 26px rgba(0,0,0,.25)}
+.tab .num{position:absolute;top:10px;right:12px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.tab .name{font-weight:750;font-size:13.5px;padding-right:16px}
+.tab .tag{font-size:11.5px;color:var(--muted);margin-top:2px;min-height:18px}
+.tab .cov{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12px;color:var(--text-2)}
+.tab .mbar{flex:1;height:4px;border-radius:4px;background:#1a3a4e;overflow:hidden}
+.tab .mbar i{display:block;height:100%;border-radius:4px}
+
+/* Metrics */
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.metric{border:1px solid var(--border);background:linear-gradient(150deg,var(--surface-2),var(--surface));border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden}
+.metric-label{color:var(--text-2);font-size:11px;font-weight:750;text-transform:uppercase;letter-spacing:1px}
+.metric-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:8px 0 2px}
+.metric-value{font-size:32px;font-weight:800;letter-spacing:-1px;line-height:1.1}
+.metric-unit{font-size:14px;color:var(--muted);font-weight:600}
+.metric-note{font-size:12px;color:var(--muted)}
+.delta{font-size:11.5px;font-weight:750;padding:2px 7px;border-radius:999px;border:1px solid;opacity:0;transition:opacity .3s}
+.delta.show{opacity:1}
+.delta.neg{color:var(--bad);border-color:rgba(255,107,128,.4);background:rgba(255,107,128,.08)}
+.delta.zero{color:var(--good);border-color:rgba(79,220,197,.4);background:rgba(79,220,197,.08)}
+.metric .accent{position:absolute;left:0;top:0;bottom:0;width:3px}
+
+/* Panels */
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px}
+.panel{border:1px solid var(--border);background:rgba(11,29,46,.92);border-radius:var(--radius);min-width:0;overflow:hidden}
+.panel-header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 20px;border-bottom:1px solid var(--border)}
+.panel-title{font-size:15px;font-weight:800;letter-spacing:-.2px}
+.mini{font-size:11.5px;color:var(--muted)}
+.panel-body{padding:16px 20px}
+
+/* Network */
+.network{position:relative;padding:6px 10px 0}
+.network svg{width:100%;height:auto;display:block;max-height:520px}
+.player{display:flex;align-items:center;gap:12px;padding:12px 20px;border-top:1px solid var(--border);background:rgba(6,17,31,.45);flex-wrap:wrap}
+.btn{cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-3);border-radius:9px;padding:7px 12px;font-size:12.5px;font-weight:700;display:inline-flex;align-items:center;gap:7px;transition:background .15s,border-color .15s}
+.btn:hover{border-color:var(--mint)}
+.btn:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.btn.primary{background:var(--mint);color:#04211f;border-color:var(--mint)}
+.btn.primary:hover{background:#6fe7d4}
+.slider{flex:1;min-width:140px;accent-color:var(--mint);cursor:pointer}
+.step-label{font-family:var(--mono);font-size:11.5px;color:var(--text-2);min-width:118px;text-align:right}
+.speed{display:inline-flex;border:1px solid var(--border-strong);border-radius:9px;overflow:hidden}
+.speed button{cursor:pointer;background:transparent;border:0;padding:6px 9px;font-size:11.5px;font-weight:700;color:var(--muted)}
+.speed button[aria-pressed="true"]{background:var(--surface-3);color:var(--text)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;align-items:center;padding:10px 20px 14px;color:var(--text-2);font-size:11.5px}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.lk{width:10px;height:10px;border-radius:50%;display:inline-block}
+.lp{width:18px;height:3px;border-radius:2px;display:inline-block}
+.lp.dash{background:repeating-linear-gradient(90deg,var(--red) 0 5px,transparent 5px 8px)}
+.inspector{margin:0 20px 16px;border:1px dashed var(--border-strong);border-radius:12px;padding:11px 14px;font-size:12.5px;color:var(--text-2);min-height:46px}
+.inspector b{color:var(--text)}
+.inspector .route{font-family:var(--mono);font-size:11.5px;color:var(--text);margin-top:5px;display:flex;justify-content:space-between;gap:10px}
+.inspector .route span:last-child{color:var(--mint);white-space:nowrap}
+
+/* SVG */
+.pipe-track{stroke:#20425a;stroke-linecap:round}
+.pipe-flow{stroke-linecap:round;transition:stroke-width .25s,stroke .25s,opacity .25s}
+.pipe-dash{stroke:#e9fbff;stroke-width:1.6;stroke-dasharray:4 12;opacity:0;stroke-linecap:round}
+.pipe-dash.on{opacity:.55;animation:flow 1.1s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-32}}
+.pipe-failed{stroke:var(--red);stroke-width:3.5;stroke-dasharray:8 7;stroke-linecap:round}
+.pipe-hit{stroke:transparent;stroke-width:16;cursor:help}
+.pulse{fill:none;stroke:#fff;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:0;animation:pulse .7s ease-out}
+@keyframes pulse{0%{opacity:.75}100%{opacity:0;stroke-width:12}}
+.node{cursor:pointer}
+.node text{paint-order:stroke;stroke:#08182a;stroke-width:4px;stroke-linejoin:round}
+.node .ring{transition:stroke-dasharray .25s}
+.dim{opacity:.16;transition:opacity .2s}
+g.pipe,g.node{transition:opacity .2s}
+.fail-mark{animation:blink 1.6s ease-in-out infinite}
+@keyframes blink{50%{opacity:.45}}
+
+/* Districts */
+.district{margin-bottom:14px;cursor:pointer;border-radius:8px;padding:2px 0}
+.district:last-child{margin-bottom:0}
+.district.focus .district-name{color:var(--mint)}
+.district-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;font-size:13px}
+.district-name{font-weight:650}
+.district-val{color:var(--text-2);font-size:11.5px}
+.track{height:7px;border-radius:7px;background:#173549;overflow:hidden}
+.fill{height:100%;border-radius:7px;transition:width .25s ease,background .25s}
+.flag{font-size:9.5px;padding:1px 6px;border:1px solid rgba(242,184,102,.55);color:var(--amber);border-radius:5px;margin-left:7px;font-weight:800;letter-spacing:.5px;vertical-align:1px}
+.sub-h{font-size:11px;font-weight:800;letter-spacing:1.3px;color:var(--muted);text-transform:uppercase;margin:0 0 12px}
+.divider{border-top:1px solid var(--border)}
+.res-row{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px}
+.res-row span:last-child{color:var(--text-2)}
+.res{margin-bottom:12px}.res:last-child{margin-bottom:0}
+.statline{display:flex;justify-content:space-between;font-size:12.5px;padding:10px 20px;border-top:1px solid var(--border)}
+.statline span{color:var(--text-2)}
+
+/* Lower */
+.lower{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;margin-top:16px}
+.insights{list-style:none;margin:0;padding:0}
+.insights li{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-2);line-height:1.55}
+.insights li:last-child{border-bottom:0}
+.insights b{color:var(--text)}
+.ico{flex:none;width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-size:12px;font-weight:800;margin-top:1px}
+.ico.i{background:rgba(104,184,239,.14);color:var(--blue)}
+.ico.w{background:rgba(242,184,102,.14);color:var(--amber)}
+.ico.x{background:rgba(255,107,128,.14);color:var(--red)}
+.ico.ok{background:rgba(79,220,197,.14);color:var(--mint)}
+.log{list-style:none;margin:0;padding:0;max-height:300px;overflow:auto;font-family:var(--mono);font-size:11.5px}
+.log li{display:grid;grid-template-columns:38px 1fr auto;gap:10px;padding:6px 0;border-bottom:1px solid rgba(29,58,78,.6);color:var(--text-2)}
+.log li.new{animation:flash .8s ease-out}
+@keyframes flash{from{background:rgba(79,220,197,.15)}to{background:transparent}}
+.log .n{color:var(--muted)}
+.log .u{color:var(--mint);font-weight:700}
+.log .crit{color:var(--amber)}
+.log .empty{display:block;color:var(--muted);font-family:inherit;padding:10px 0;border:0}
+
+/* Comparison chart */
+.cmp-legend{display:flex;gap:16px;font-size:11.5px;color:var(--text-2);margin-bottom:10px}
+.cmp-legend span{display:inline-flex;align-items:center;gap:6px}
+.cmp-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.cmp{display:grid;grid-template-columns:150px minmax(0,1fr);row-gap:10px;column-gap:14px;align-items:center}
+.cmp-name{font-size:12.5px;color:var(--text-2);cursor:pointer;line-height:1.25}
+.cmp-name.active{color:var(--text);font-weight:750}
+.cmp-bars{position:relative;cursor:pointer;padding:3px 0;margin-right:44px}
+.cmp-bars .gl{position:absolute;top:0;bottom:0;width:1px;background:rgba(127,155,173,.16)}
+.cmp-bar{position:relative;height:10px;border-radius:0 4px 4px 0;margin:2px 0;transition:width .4s}
+.cmp-bar em{position:absolute;left:calc(100% + 6px);top:50%;transform:translateY(-50%);font-style:normal;font-size:10.5px;color:var(--text-2);white-space:nowrap}
+.cmp-row-active{background:rgba(79,220,197,.06);border-radius:6px}
+.axis{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin:4px 44px 0 0}
+details.table{margin-top:14px;font-size:12px;color:var(--text-2)}
+details.table summary{cursor:pointer;color:var(--muted)}
+details.table table{width:100%;border-collapse:collapse;margin-top:8px}
+details.table th,details.table td{text-align:right;padding:5px 6px;border-bottom:1px solid var(--border)}
+details.table th:first-child,details.table td:first-child{text-align:left}
+
+/* How it works */
+.how{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;margin-top:16px}
+.flow{display:grid;grid-template-columns:1fr 34px 1fr 34px 1fr;align-items:center;gap:0}
+.agent{border:1px solid var(--border);background:var(--surface-2);border-radius:12px;padding:12px 13px;min-height:96px}
+.agent+.agent{margin-top:10px}
+.agent .t{font-weight:750;font-size:13px;display:flex;align-items:center;gap:7px}
+.agent .t i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.agent p{margin:5px 0 0;font-size:12px;color:var(--text-2);line-height:1.45}
+.agent code,.algo code{font-family:var(--mono);font-size:11px;color:var(--mint)}
+.arrow{color:var(--border-strong);text-align:center;font-size:20px}
+.algo{counter-reset:s;list-style:none;margin:0;padding:0}
+.algo li{counter-increment:s;position:relative;padding:0 0 13px 34px;font-size:12.5px;color:var(--text-2);line-height:1.5}
+.algo li:before{content:counter(s);position:absolute;left:0;top:0;width:22px;height:22px;border-radius:50%;background:var(--surface-3);border:1px solid var(--border-strong);display:grid;place-items:center;font-size:11px;font-weight:800;color:var(--mint)}
+.algo b{color:var(--text)}
+.formula{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-top:4px;color:var(--text)}
+
+/* Milestone */
+.milestone{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:16px}
+.check{list-style:none;margin:0;padding:0}
+.check li{position:relative;padding:0 0 9px 24px;font-size:12.5px;color:var(--text-2);line-height:1.5}
+.check li:before{position:absolute;left:0;top:0;font-weight:800}
+.check.done li:before{content:"✓";color:var(--mint)}
+.check.next li:before{content:"→";color:var(--blue)}
+.check.lim li:before{content:"!";color:var(--amber);left:4px}
+
+.footer{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;color:var(--muted);font-size:11.5px;padding-top:24px;margin-top:26px;border-top:1px solid var(--border)}
+
+/* Tooltip */
+.tip{position:fixed;z-index:50;pointer-events:none;background:#0a1a2a;border:1px solid var(--border-strong);border-radius:10px;padding:9px 11px;font-size:12px;color:var(--text-2);box-shadow:0 10px 30px rgba(0,0,0,.45);max-width:280px;opacity:0;transition:opacity .12s}
+.tip.show{opacity:1}
+.tip b{color:var(--text);display:block;margin-bottom:3px;font-size:12.5px}
+.tip .row{display:flex;justify-content:space-between;gap:14px}
+.tip .row span:last-child{color:var(--text);font-variant-numeric:tabular-nums}
+
+@media (max-width:1100px){
+  .grid{grid-template-columns:1fr}
+  .tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .lower,.how{grid-template-columns:1fr}
+  .milestone{grid-template-columns:1fr 1fr}
+}
+@media (max-width:720px){
+  .wrap{padding:16px 16px 36px}
+  .hero{grid-template-columns:1fr;gap:18px}
+  .tabs{grid-template-columns:1fr 1fr}
+  .metrics{grid-template-columns:1fr 1fr;gap:10px}
+  .metric-value{font-size:25px}
+  .milestone{grid-template-columns:1fr}
+  .flow{grid-template-columns:1fr}
+  .arrow{transform:rotate(90deg);padding:4px 0}
+  .badges .badge:nth-child(n+2){display:none}
+  .kbd-hint{display:none}
+  .cmp{grid-template-columns:100px minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{body{background:#fff;color:#000}.player,.kbd-hint{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#04211f" stroke-width="2.6" stroke-linecap="round"><path d="M2 9c2.5-2 4.5-2 7 0s4.5 2 7 0 4.5-2 6 0"/><path d="M2 15c2.5-2 4.5-2 7 0s4.5 2 7 0 4.5-2 6 0"/></svg></div>
+      AquaGrid<span>AI</span>
+    </div>
+    <div class="badges">
+      <div class="badge" id="test-badge"><span class="dot"></span><span id="test-text">Tests</span></div>
+      <div class="badge">CS3081 · Milestone 01</div>
+      <div class="badge">v0.1 prototype</div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Multi-agent system · Crisis simulation</div>
+      <h1>Water distribution,<br>under pressure.</h1>
+      <p class="lede">Four cooperating software agents decide how a fictional city's limited water supply is routed when pipes fail, reservoirs run low, or demand spikes. Pick a scenario below and watch each allocation decision play out on the network.</p>
+    </div>
+    <div class="rq">
+      <div class="k">Research question</div>
+      <p>How can cooperating agents adapt water allocation, and protect critical services, when infrastructure fails or resources become scarce?</p>
+      <div class="facts"><span><b>11</b>nodes</span><span><b>16</b>pipelines</span><span><b>4</b>agent roles</span><span><b>5</b>scenarios</span></div>
+    </div>
+  </section>
+
+  <div class="section-label">
+    <h2>Scenario</h2>
+    <div class="kbd-hint"><kbd>1</kbd>–<kbd>5</kbd> switch scenario · <kbd>Space</kbd> play / pause · <kbd>←</kbd><kbd>→</kbd> step · <kbd>R</kbd> replay</div>
+  </div>
+  <div class="tabs" role="tablist" aria-label="Crisis scenarios" id="tabs"></div>
+
+  <section class="metrics" aria-label="Allocation metrics">
+    <div class="metric"><i class="accent" style="background:var(--mint)"></i>
+      <div class="metric-label">Total demand satisfied</div>
+      <div class="metric-row"><span class="metric-value tnum" id="m-cov">–</span><span class="delta" id="d-cov"></span></div>
+      <div class="metric-note" id="m-cov-note">Delivered ÷ requested</div>
+    </div>
+    <div class="metric"><i class="accent" style="background:var(--blue)"></i>
+      <div class="metric-label">Water delivered</div>
+      <div class="metric-row"><span class="metric-value tnum" id="m-del">–</span><span class="metric-unit tnum" id="m-del-of"></span></div>
+      <div class="metric-note" id="m-del-note">Simulation units, one cycle</div>
+    </div>
+    <div class="metric"><i class="accent" style="background:var(--amber)"></i>
+      <div class="metric-label">Hospital coverage</div>
+      <div class="metric-row"><span class="metric-value tnum" id="m-hos">–</span><span class="delta" id="d-hos"></span></div>
+      <div class="metric-note">Critical district, served first</div>
+    </div>
+    <div class="metric"><i class="accent" style="background:var(--red)"></i>
+      <div class="metric-label">Network stress</div>
+      <div class="metric-row"><span class="metric-value tnum" id="m-fail">–</span><span class="metric-unit">failed</span></div>
+      <div class="metric-note tnum" id="m-sat">– pipes at full capacity</div>
+    </div>
+  </section>
+
+  <main class="grid">
+    <section class="panel" aria-label="Network map">
+      <div class="panel-header">
+        <div><div class="panel-title">Simulated city network</div><div class="mini" id="scn-desc"></div></div>
+        <div class="mini">Hover for details · click a district</div>
+      </div>
+      <div class="network"><svg id="net" viewBox="0 0 900 500" role="img" aria-label="Water distribution network diagram"></svg></div>
+      <div class="legend">
+        <span><i class="lk" style="background:var(--blue)"></i>Reservoir</span>
+        <span><i class="lk" style="background:#6b8ba0"></i>Junction</span>
+        <span><i class="lk" style="background:var(--mint)"></i>District</span>
+        <span><i class="lk" style="background:var(--amber)"></i>Hospital (critical)</span>
+        <span><i class="lp" style="background:#3aa9d6"></i>Active flow (width = load)</span>
+        <span><i class="lp" style="background:var(--violet)"></i>At capacity</span>
+        <span><i class="lp dash"></i>Failed pipe</span>
+      </div>
+      <div class="inspector" id="inspector"></div>
+      <div class="player">
+        <button class="btn primary" id="play" aria-label="Play allocation"><span id="play-ico">▶</span><span id="play-txt">Play</span></button>
+        <button class="btn" id="replay" title="Replay from start (R)">↺ Replay</button>
+        <input type="range" class="slider" id="slider" min="0" value="0" aria-label="Allocation step">
+        <span class="step-label" id="step-label">–</span>
+        <div class="speed" role="group" aria-label="Playback speed">
+          <button data-speed="220" aria-pressed="false">0.5×</button>
+          <button data-speed="110" aria-pressed="true">1×</button>
+          <button data-speed="45" aria-pressed="false">2×</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="District service">
+      <div class="panel-header"><div class="panel-title">District water service</div><div class="mini">received / demand</div></div>
+      <div class="panel-body" id="districts"></div>
+      <div class="divider"></div>
+      <div class="panel-body">
+        <div class="sub-h">Reservoir supply released</div>
+        <div id="reservoirs"></div>
+      </div>
+      <div class="statline"><span>Unmet demand</span><strong class="tnum" id="m-unmet">–</strong></div>
+      <div class="statline"><span>Lowest district coverage</span><strong class="tnum" id="m-min">–</strong></div>
+      <div class="statline"><span>Dispatch transfers (20-unit chunks)</span><strong class="tnum" id="m-tr">–</strong></div>
+    </aside>
+  </main>
+
+  <section class="lower">
+    <article class="panel">
+      <div class="panel-header"><div class="panel-title">What the agents did</div><div class="mini">Generated from this run's output</div></div>
+      <div class="panel-body"><ul class="insights" id="insights"></ul></div>
+    </article>
+    <article class="panel">
+      <div class="panel-header"><div class="panel-title">Coordinator decision log</div><div class="mini" id="log-count"></div></div>
+      <div class="panel-body"><ul class="log" id="log" aria-live="polite"></ul></div>
+    </article>
+  </section>
+
+  <section class="lower">
+    <article class="panel">
+      <div class="panel-header"><div class="panel-title">Scenario comparison</div><div class="mini">Final coverage per scenario · click to open</div></div>
+      <div class="panel-body">
+        <div class="cmp-legend"><span><i style="background:var(--mint)"></i>Total demand satisfied</span><span><i style="background:var(--amber)"></i>Hospital coverage</span></div>
+        <div class="cmp" id="cmp"></div>
+        <div class="cmp"><div></div><div class="axis"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div></div>
+        <details class="table"><summary>Show as table</summary><table id="cmp-table"></table></details>
+      </div>
+    </article>
+    <article class="panel">
+      <div class="panel-header"><div class="panel-title">Key finding</div><div class="mini">Pipe-failure case</div></div>
+      <div class="panel-body" id="finding"></div>
+    </article>
+  </section>
+
+  <section class="how">
+    <article class="panel">
+      <div class="panel-header"><div class="panel-title">How it works: agent architecture</div><div class="mini">aquagrid/agents.py</div></div>
+      <div class="panel-body">
+        <div class="flow">
+          <div>
+            <div class="agent"><div class="t"><i style="background:var(--mint)"></i>District agents ×6</div><p>Each broadcasts a <code>WaterRequest</code> with demand, priority and a critical flag.</p></div>
+            <div class="agent"><div class="t"><i style="background:var(--blue)"></i>Reservoir agents ×2</div><p>Broadcast a <code>WaterOffer</code> of remaining supply and release water when assigned.</p></div>
+          </div>
+          <div class="arrow" aria-hidden="true">→</div>
+          <div class="agent" style="min-height:202px"><div class="t"><i style="background:var(--amber)"></i>Crisis coordinator</div><p>Collects requests and offers. Serves critical districts first, then runs round-robin in 20-unit chunks so no district starves.</p><p>Asks the network agent for a route each time.</p></div>
+          <div class="arrow" aria-hidden="true">⇄</div>
+          <div class="agent" style="min-height:202px"><div class="t"><i style="background:var(--violet)"></i>Network agent</div><p>Runs <b>A*</b> from every reservoir with supply, skipping failed or full pipes. Returns the cheapest <code>RouteProposal</code> and its bottleneck capacity.</p><p>Dispatch updates pipe loads.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="panel">
+      <div class="panel-header"><div class="panel-title">One allocation cycle</div><div class="mini">aquagrid/simulator.py</div></div>
+      <div class="panel-body">
+        <ol class="algo">
+          <li><b>Broadcast.</b> Districts publish requests and reservoirs publish offers.</li>
+          <li><b>Route.</b> A* searches with <div class="formula">f(n) = g(n) + h(n)</div>where h is the straight-line distance × the cheapest cost per unit distance, so it never overestimates (admissible).</li>
+          <li><b>Allocate.</b> Hospital first, then the other districts in turn, at most <code>min(20, need, path capacity)</code> units per dispatch.</li>
+          <li><b>Repeat</b> until no request can be served by any feasible route.</li>
+          <li><b>Verify.</b> The engine asserts water conservation and that no pipe exceeds capacity.</li>
+        </ol>
+      </div>
+    </article>
+  </section>
+
+  <section class="milestone">
+    <article class="panel"><div class="panel-header"><div class="panel-title">Milestone 01: delivered</div></div>
+      <div class="panel-body"><ul class="check done">
+        <li>Synthetic network: 2 reservoirs, 3 junctions, 6 districts, 16 capacity-limited pipes</li>
+        <li>Four agent roles that exchange typed messages</li>
+        <li>A* routing that avoids failed and saturated pipes</li>
+        <li>Critical-first + round-robin allocation policy</li>
+        <li>5 crisis scenarios, CLI, Streamlit dashboard and this offline viewer</li>
+        <li id="tests-li">Automated unit tests</li>
+      </ul></div></article>
+    <article class="panel"><div class="panel-header"><div class="panel-title">Next milestone</div></div>
+      <div class="panel-body"><ul class="check next">
+        <li>Multi-timestep simulation with reservoir state over time</li>
+        <li>Baselines: static split and greedy allocation vs. the coordinator</li>
+        <li>Decentralised agent negotiation instead of a central coordinator</li>
+        <li>Noisy sensor observations (probabilistic inference)</li>
+        <li>Recovery-time metrics and more tests</li>
+      </ul></div></article>
+    <article class="panel"><div class="panel-header"><div class="panel-title">Scope &amp; limitations</div></div>
+      <div class="panel-body"><ul class="check lim" id="limits"></ul></div></article>
+  </section>
+
+  <footer class="footer">
+    <span>Every number on this page comes from the Python engine (<code>export_demo.py</code>). The page replays exported results; it does not run the simulation in the browser.</span>
+    <span id="gen"></span>
+  </footer>
+</div>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script>
+const DATA = __DATA__;
+const S = DATA.snapshots, META = DATA.meta, ORDER = Object.keys(S);
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pct = n => (Math.round(n * 10) / 10).toFixed(1).replace(/\.0$/, '') + '%';
+const key = (a, b) => a < b ? a + '|' + b : b + '|' + a;
+const statusColor = p => p >= 90 ? 'var(--good)' : p >= 60 ? 'var(--warn)' : 'var(--bad)';
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const sx = x => 60 + x * 7.6, sy = y => 470 - y * 4.5;
+
+let cur = ORDER[0], step = 0, timer = null, speed = 110, focus = null;
+const label = id => S[cur].nodes.find(n => n.id === id)?.label ?? id;
+const short = id => label(id).replace(' Reservoir', ' Res.').replace(' Junction', ' Jct.');
+
+/* ---------- Meta ---------- */
+(function meta() {
+  const t = META.tests, ok = t.failed === 0 && t.run > 0;
+  $('test-text').textContent = ok ? `${t.passed}/${t.run} tests passing` : `${t.failed} test(s) failing`;
+  if (!ok) $('test-badge').classList.add('fail');
+  $('tests-li').textContent = `${t.run} automated unit tests (${t.passed} passing at export time)`;
+  $('gen').textContent = `Exported ${META.generated} · CS3081 · AquaGrid AI`;
+  $('limits').innerHTML = S[ORDER[0]].limitations.map(l => `<li>${esc(l)}</li>`).join('');
+})();
+
+function tagFor(id) {
+  const sp = META.specs[id], parts = [];
+  if (sp.broken_pipes.length) parts.push(`${sp.broken_pipes.length} pipe failure`);
+  if (sp.supply_multiplier !== 1) parts.push(`supply ${Math.round((sp.supply_multiplier - 1) * 100)}%`);
+  if (sp.demand_multiplier !== 1) parts.push(`demand +${Math.round((sp.demand_multiplier - 1) * 100)}%`);
+  return parts.length ? parts.join(' · ') : 'baseline';
+}
+
+/* ---------- Tabs ---------- */
+$('tabs').innerHTML = ORDER.map((id, i) => {
+  const m = S[id].metrics;
+  return `<button class="tab" role="tab" data-id="${id}" aria-selected="false">
+    <span class="num">${i + 1}</span><div class="name">${esc(S[id].scenario)}</div>
+    <div class="tag">${esc(tagFor(id))}</div>
+    <div class="cov tnum"><span class="mbar"><i style="width:${m.satisfaction_pct}%;background:${statusColor(m.satisfaction_pct)}"></i></span>${pct(m.satisfaction_pct)}</div></button>`;
+}).join('');
+$('tabs').addEventListener('click', e => { const b = e.target.closest('.tab'); if (b) select(b.dataset.id, true); });
+
+/* ---------- State at a given step ---------- */
+function stateAt(s, k) {
+  const pipe = {}, dist = {}, res = {};
+  s.pipes.forEach(p => pipe[key(p.a, p.b)] = 0);
+  s.districts.forEach(d => dist[d.id] = 0);
+  s.reservoirs.forEach(r => res[r.id] = 0);
+  for (let i = 0; i < k; i++) {
+    const t = s.transfers[i];
+    dist[t.destination] += t.units; res[t.source] += t.units;
+    for (let j = 0; j < t.path.length - 1; j++) pipe[key(t.path[j], t.path[j + 1])] += t.units;
+  }
+  return { pipe, dist, res };
+}
+function flowDir(s) { // net direction each pipe carries water, from all transfers
+  const d = {};
+  for (const t of s.transfers) for (let j = 0; j < t.path.length - 1; j++) {
+    const a = t.path[j], b = t.path[j + 1], k = key(a, b);
+    d[k] = (d[k] || 0) + (a < b ? t.units : -t.units);
+  }
+  return d;
+}
+
+/* ---------- Network drawing (built once per scenario) ---------- */
+function buildNetwork(s) {
+  const map = Object.fromEntries(s.nodes.map(n => [n.id, n])), dir = flowDir(s);
+  const grid = `<defs><pattern id="gp" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#132c40" stroke-width=".7"/></pattern>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter></defs>
+    <rect width="900" height="500" fill="url(#gp)" opacity=".75"/>`;
+  const pipes = s.pipes.map(p => {
+    const k = key(p.a, p.b);
+    let [a, b] = [map[p.a], map[p.b]];
+    if ((dir[k] || 0) !== 0 && ((dir[k] > 0) !== (p.a < p.b))) [a, b] = [b, a];
+    const c = `x1="${sx(a.x)}" y1="${sy(a.y)}" x2="${sx(b.x)}" y2="${sy(b.y)}"`;
+    if (!p.active) {
+      const mx = (sx(a.x) + sx(b.x)) / 2, my = (sy(a.y) + sy(b.y)) / 2;
+      return `<g class="pipe" data-k="${k}"><line ${c} class="pipe-failed"/>
+        <g class="fail-mark"><circle cx="${mx}" cy="${my}" r="11" fill="#2a0f1a" stroke="var(--red)" stroke-width="2"/><path d="M${mx - 4} ${my - 4}l8 8M${mx + 4} ${my - 4}l-8 8" stroke="var(--red)" stroke-width="2.2" stroke-linecap="round"/></g>
+        <line ${c} class="pipe-hit"/></g>`;
+    }
+    return `<g class="pipe" data-k="${k}"><line ${c} class="pipe-track" stroke-width="5"/><line ${c} class="pipe-flow" stroke-width="0"/><line ${c} class="pipe-dash"/><line ${c} class="pipe-hit"/></g>`;
+  }).join('');
+  const nodes = s.nodes.map(n => {
+    const d = s.districts.find(x => x.id === n.id), px = sx(n.x), py = sy(n.y);
+    if (n.kind === 'reservoir') return `<g class="node" data-id="${n.id}">
+      <circle cx="${px}" cy="${py}" r="26" fill="var(--blue)" opacity=".12" filter="url(#glow)"/>
+      <rect x="${px - 17}" y="${py - 17}" width="34" height="34" rx="10" fill="#0c2a40" stroke="var(--blue)" stroke-width="2.5"/>
+      <path d="M${px - 9} ${py - 2}q4.5-4 9 0t9 0M${px - 9} ${py + 5}q4.5-4 9 0t9 0" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round"/>
+      <text x="${px}" y="${py - 27}" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e3f3f8">${esc(n.label)}</text>
+      <text class="sub" x="${px}" y="${py + 35}" text-anchor="middle" font-size="11.5" fill="#8fb0c2"></text></g>`;
+    if (n.kind === 'junction') return `<g class="node" data-id="${n.id}">
+      <circle cx="${px}" cy="${py}" r="8" fill="#0c2131" stroke="#6b8ba0" stroke-width="2.5"/>
+      <text x="${px}" y="${py + 25}" text-anchor="middle" font-size="12" font-weight="600" fill="#9fb9c8">${esc(n.label)}</text></g>`;
+    const col = d.critical ? 'var(--amber)' : 'var(--mint)', C = 2 * Math.PI * 19;
+    const glyph = d.critical ? `<path d="M${px} ${py - 6}v12M${px - 6} ${py}h12" stroke="${col}" stroke-width="3" stroke-linecap="round"/>` : `<circle cx="${px}" cy="${py}" r="4" fill="${col}"/>`;
+    return `<g class="node" data-id="${n.id}">
+      <circle cx="${px}" cy="${py}" r="19" fill="none" stroke="#1d3d52" stroke-width="4"/>
+      <circle class="ring" cx="${px}" cy="${py}" r="19" fill="none" stroke="${col}" stroke-width="4" stroke-linecap="round" stroke-dasharray="0 ${C}" transform="rotate(-90 ${px} ${py})" data-c="${C}"/>
+      <circle cx="${px}" cy="${py}" r="13" fill="#0c2131" stroke="${col}" stroke-width="1.5" opacity=".9"/>${glyph}
+      <text x="${px + 30}" y="${py - 2}" font-size="13.5" font-weight="700" fill="#e3f3f8">${esc(n.label)}${d.critical ? ' ★' : ''}</text>
+      <text class="sub" x="${px + 30}" y="${py + 14}" font-size="11.5" fill="#8fb0c2"></text></g>`;
+  }).join('');
+  $('net').innerHTML = grid + `<g id="pipes">${pipes}</g><g id="pulse"></g><g id="nodes">${nodes}</g>`;
+}
+
+function updateNetwork(s, st) {
+  const pmap = Object.fromEntries(s.pipes.map(p => [key(p.a, p.b), p]));
+  document.querySelectorAll('#pipes .pipe').forEach(g => {
+    const p = pmap[g.dataset.k]; if (!p.active) return;
+    const used = st.pipe[g.dataset.k], u = used / p.capacity, full = used >= p.capacity;
+    const flow = g.querySelector('.pipe-flow');
+    flow.setAttribute('stroke-width', used ? 2.5 + u * 6.5 : 0);
+    flow.setAttribute('stroke', full ? 'var(--violet)' : '#3aa9d6');
+    g.querySelector('.pipe-dash').classList.toggle('on', used > 0 && !reduced);
+  });
+  document.querySelectorAll('#nodes .node').forEach(g => {
+    const id = g.dataset.id, sub = g.querySelector('.sub');
+    const d = s.districts.find(x => x.id === id), r = s.reservoirs.find(x => x.id === id);
+    if (d) {
+      const got = st.dist[id], p = got / d.demand, ring = g.querySelector('.ring'), C = +ring.dataset.c;
+      ring.setAttribute('stroke-dasharray', `${C * p} ${C}`);
+      sub.textContent = `${got}/${d.demand} · ${pct(100 * p)}`;
+    } else if (r) sub.textContent = `released ${st.res[id]}/${r.initial}`;
+  });
+}
+
+function pulse(t) {
+  if (!t || reduced) return;
+  const map = Object.fromEntries(S[cur].nodes.map(n => [n.id, n]));
+  const pts = t.path.map(id => `${sx(map[id].x)},${sy(map[id].y)}`).join(' ');
+  $('pulse').innerHTML = `<polyline class="pulse" points="${pts}"/>`;
+}
+
+function applyFocus() {
+  const s = S[cur];
+  document.querySelectorAll('.district').forEach(el => el.classList.toggle('focus', el.dataset.id === focus));
+  if (!focus) {
+    document.querySelectorAll('#net .dim').forEach(e => e.classList.remove('dim'));
+    $('inspector').innerHTML = `<b>Route inspector.</b> Click any district (on the map or in the list) to see the A* routes the agents used to supply it.`;
+    return;
+  }
+  const routes = new Map();
+  for (const t of s.transfers.slice(0, step)) if (t.destination === focus) {
+    const k = t.path.join('>'), r = routes.get(k) || { path: t.path, units: 0, cost: t.path_cost, n: 0 };
+    r.units += t.units; r.n++; routes.set(k, r);
+  }
+  const onRoute = new Set([focus]), pipeOn = new Set();
+  routes.forEach(r => r.path.forEach((id, i) => { onRoute.add(id); if (i) pipeOn.add(key(r.path[i - 1], id)); }));
+  s.pipes.filter(p => !p.active && (p.a === focus || p.b === focus)).forEach(p => pipeOn.add(key(p.a, p.b)));
+  document.querySelectorAll('#pipes .pipe').forEach(g => g.classList.toggle('dim', !pipeOn.has(g.dataset.k)));
+  document.querySelectorAll('#nodes .node').forEach(g => g.classList.toggle('dim', !onRoute.has(g.dataset.id)));
+  const d = s.districts.find(x => x.id === focus), got = stateAt(s, step).dist[focus];
+  $('inspector').innerHTML = `<b>${esc(d.label)}</b>${d.critical ? ' <span class="flag">CRITICAL</span>' : ''} · priority ${d.priority} · received ${got}/${d.demand} units` +
+    (routes.size ? [...routes.values()].map(r => `<div class="route"><span>${r.path.map(short).map(esc).join(' → ')}</span><span>${r.units} u · cost ${r.cost}</span></div>`).join('')
+                 : `<div class="route"><span>No transfers yet at this step.</span><span></span></div>`);
+}
+
+/* ---------- Panels ---------- */
+function renderPanels(s, st) {
+  const m = s.metrics, N = s.transfers.length, done = step === N;
+  const delivered = Object.values(st.dist).reduce((a, b) => a + b, 0);
+  const cov = 100 * delivered / m.total_demand;
+  const hosp = s.districts.find(d => d.critical), hp = 100 * st.dist[hosp.id] / hosp.demand;
+  const base = S[ORDER[0]].metrics;
+  $('m-cov').textContent = pct(cov); $('m-cov').style.color = statusColor(done ? m.satisfaction_pct : 100);
+  $('m-del').textContent = delivered.toLocaleString(); $('m-del-of').textContent = `/ ${m.total_demand.toLocaleString()}`;
+  $('m-del-note').textContent = `Supply available: ${m.total_supply.toLocaleString()} units`;
+  $('m-hos').textContent = pct(hp); $('m-hos').style.color = statusColor(done ? hp : 100);
+  const fullPipes = s.pipes.filter(p => p.active && st.pipe[key(p.a, p.b)] >= p.capacity).length;
+  $('m-fail').textContent = m.failed_pipes; $('m-fail').style.color = m.failed_pipes ? 'var(--red)' : 'var(--text)';
+  $('m-sat').textContent = `${fullPipes} pipe${fullPipes === 1 ? '' : 's'} at full capacity`;
+  for (const [el, v, b] of [[$('d-cov'), m.satisfaction_pct, base.satisfaction_pct], [$('d-hos'), m.hospital_satisfaction_pct, base.hospital_satisfaction_pct]]) {
+    const dv = Math.round((v - b) * 10) / 10;
+    el.textContent = dv === 0 ? (cur === ORDER[0] ? 'baseline' : '= baseline') : `${dv > 0 ? '+' : ''}${dv} pts vs normal`;
+    el.className = 'delta ' + (dv < 0 ? 'neg' : 'zero') + (done ? ' show' : '');
+  }
+  $('districts').innerHTML = s.districts.map(d => {
+    const got = st.dist[d.id], p = 100 * got / d.demand;
+    return `<div class="district${focus === d.id ? ' focus' : ''}" data-id="${d.id}"><div class="district-head"><span class="district-name">${esc(d.label)}${d.critical ? '<span class="flag">CRITICAL</span>' : ''}</span>
+      <span class="district-val tnum">${got}/${d.demand} · ${pct(p)}</span></div>
+      <div class="track"><div class="fill" style="width:${p}%;background:${done ? statusColor(p) : 'var(--blue)'}"></div></div></div>`;
+  }).join('');
+  $('reservoirs').innerHTML = s.reservoirs.map(r => {
+    const rel = st.res[r.id], p = 100 * rel / r.initial;
+    return `<div class="res"><div class="res-row"><span>${esc(r.label)}</span><span class="tnum">${rel} / ${r.initial} · ${pct(p)}</span></div>
+      <div class="track"><div class="fill" style="width:${p}%;background:var(--blue)"></div></div></div>`;
+  }).join('');
+  $('m-unmet').textContent = `${m.total_demand - delivered} units`;
+  $('m-min').textContent = done ? pct(m.min_district_satisfaction_pct) : '…';
+  $('m-tr').textContent = `${step} / ${N}`;
+  // Decision log, newest first
+  const items = s.transfers.slice(0, step).map((t, i) => ({ t, i })).reverse();
+  $('log').innerHTML = items.length ? items.map(({ t, i }, j) => {
+    const crit = s.districts.find(d => d.id === t.destination)?.critical;
+    return `<li class="${j === 0 && timer ? 'new' : ''}"><span class="n">#${String(i + 1).padStart(2, '0')}</span><span>→ <span class="${crit ? 'crit' : ''}">${esc(label(t.destination))}</span> via ${t.path.map(short).map(esc).join(' → ')}</span><span class="u">${t.units}u</span></li>`;
+  }).join('') : `<li class="empty">Press ▶ Play to watch the coordinator dispatch water step by step.</li>`;
+  $('log-count').textContent = `${step} of ${N} dispatches`;
+  $('slider').max = N; $('slider').value = step;
+  $('step-label').textContent = step === 0 ? `ready · ${N} steps` : done ? `complete · ${N}/${N}` : `dispatch ${step}/${N}`;
+}
+
+function renderInsights(s) {
+  const m = s.metrics, L = [];
+  const hosp = s.districts.find(d => d.critical);
+  L.push(['i', 'i', `<b>Requests:</b> ${s.districts.length} district agents asked for <b>${m.total_demand}</b> units; ${s.reservoirs.length} reservoir agents offered <b>${m.total_supply}</b>.` +
+    (m.total_supply < m.total_demand ? ` Supply covers only ${pct(100 * m.total_supply / m.total_demand)} of demand, so some shortfall is unavoidable.` : ' Supply exceeds demand.')]);
+  const failed = s.pipes.filter(p => !p.active);
+  for (const p of failed) {
+    const paths = [...new Set(s.transfers.filter(t => t.destination === hosp.id).map(t => t.path.map(short).join(' → ')))];
+    L.push(['x', '✕', `<b>Failure:</b> pipe ${esc(label(p.a))} – ${esc(label(p.b))} (capacity ${p.capacity}) is down. A* excluded it and rerouted the hospital via <b>${esc(paths.join(' / ') || 'no path')}</b>.`]);
+  }
+  const hospPipes = new Set();
+  s.transfers.filter(t => t.destination === hosp.id).forEach(t => t.path.forEach((id, i) => i && hospPipes.add(key(t.path[i - 1], id))));
+  const hb = s.pipes.find(p => p.active && p.used >= p.capacity && hospPipes.has(key(p.a, p.b)) && (p.a === hosp.id || p.b === hosp.id));
+  if (hosp.satisfaction_pct >= 100) L.push(['ok', '✓', `<b>Critical-first policy:</b> the hospital was served before anyone else and received its full ${hosp.demand} units.`]);
+  else L.push(['w', '!', `<b>Hospital shortfall:</b> served first but received ${hosp.delivered}/${hosp.demand} units (${pct(hosp.satisfaction_pct)}).` +
+    (hb ? ` The backup pipe ${esc(short(hb.a))} – ${esc(short(hb.b))} is at its ${hb.capacity}-unit limit; the model does not route more water than a pipe can carry.` : ' Available supply ran out.')]);
+  const sat = s.pipes.filter(p => p.active && p.used >= p.capacity);
+  if (sat.length) L.push(['w', '⚠', `<b>Bottlenecks:</b> ${sat.length} pipe${sat.length > 1 ? 's' : ''} at 100% load: ${sat.map(p => `${esc(short(p.a))} – ${esc(short(p.b))}`).join(', ')}.`]);
+  const worst = s.districts.filter(d => !d.critical).sort((a, b) => a.satisfaction_pct - b.satisfaction_pct)[0];
+  if (worst.satisfaction_pct < 100) L.push(['w', '↓', `<b>Most affected:</b> ${esc(worst.label)} at ${pct(worst.satisfaction_pct)}. Round-robin spreads the shortage across districts instead of cutting one off completely.`]);
+  L.push(['ok', '✓', `<b>Checks passed:</b> ${m.delivered} units delivered = ${s.reservoirs.reduce((a, r) => a + r.released, 0)} units released, and no pipe exceeds its capacity.`]);
+  $('insights').innerHTML = L.map(([c, g, h]) => `<li><span class="ico ${c}">${g}</span><span>${h}</span></li>`).join('');
+}
+
+function renderComparison() {
+  $('cmp').innerHTML = ORDER.map(id => {
+    const m = S[id].metrics, a = id === cur;
+    const gl = [25, 50, 75, 100].map(x => `<i class="gl" style="left:${x}%"></i>`).join('');
+    return `<div class="cmp-name${a ? ' active' : ''}" data-id="${id}">${esc(S[id].scenario)}</div>
+      <div class="cmp-bars${a ? ' cmp-row-active' : ''}" data-id="${id}">${gl}
+        <div class="cmp-bar" style="width:${m.satisfaction_pct}%;background:var(--mint)" data-tip="${esc(S[id].scenario)}|Total demand satisfied|${pct(m.satisfaction_pct)}"><em>${pct(m.satisfaction_pct)}</em></div>
+        <div class="cmp-bar" style="width:${m.hospital_satisfaction_pct}%;background:var(--amber)" data-tip="${esc(S[id].scenario)}|Hospital coverage|${pct(m.hospital_satisfaction_pct)}"><em>${pct(m.hospital_satisfaction_pct)}</em></div></div>`;
+  }).join('');
+}
+$('cmp').addEventListener('click', e => { const el = e.target.closest('[data-id]'); if (el) select(el.dataset.id, true); });
+$('cmp-table').innerHTML = `<thead><tr><th>Scenario</th><th>Demand</th><th>Supply</th><th>Delivered</th><th>Total</th><th>Hospital</th><th>Lowest</th></tr></thead><tbody>` +
+  ORDER.map(id => { const m = S[id].metrics; return `<tr><td>${esc(S[id].scenario)}</td><td>${m.total_demand}</td><td>${m.total_supply}</td><td>${m.delivered}</td><td>${pct(m.satisfaction_pct)}</td><td>${pct(m.hospital_satisfaction_pct)}</td><td>${pct(m.min_district_satisfaction_pct)}</td></tr>`; }).join('') + '</tbody>';
+
+(function finding() {
+  const pf = S.pipe_failure ?? Object.values(S).find(s => s.metrics.failed_pipes);
+  if (!pf) { $('finding').closest('article').remove(); return; }
+  const base = S[ORDER[0]], h = pf.districts.find(d => d.critical);
+  const route = [...new Set(pf.transfers.filter(t => t.destination === h.id).map(t => t.path.map(id => pf.nodes.find(n => n.id === id).label).join(' → ')))][0];
+  const backup = pf.pipes.find(p => p.active && (p.a === h.id || p.b === h.id) && p.used > 0);
+  $('finding').innerHTML = `<p style="margin:0 0 12px;font-size:14px;line-height:1.6">When the hospital's main pipe fails, A* finds an alternative route, <b style="color:var(--mint)">${esc(route)}</b>. That route carries at most <b>${backup ? backup.capacity : '–'} units</b>, so the hospital receives <b style="color:var(--amber)">${h.delivered}/${h.demand}</b> units even though the city has spare supply.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="agent" style="min-height:0"><div class="mini">Total satisfied</div><div class="metric-value tnum" style="font-size:24px">${pct(base.metrics.satisfaction_pct)} → ${pct(pf.metrics.satisfaction_pct)}</div></div>
+      <div class="agent" style="min-height:0;margin:0"><div class="mini">Hospital coverage</div><div class="metric-value tnum" style="font-size:24px;color:var(--amber)">${pct(base.metrics.hospital_satisfaction_pct)} → ${pct(pf.metrics.hospital_satisfaction_pct)}</div></div>
+    </div>
+    <p class="mini" style="margin:12px 0 0">Takeaway: rerouting alone cannot restore critical service when the backup has less capacity. Redundant capacity matters as much as smart routing. This motivates the next milestone's multi-timestep model.</p>`;
+})();
+
+/* ---------- Tooltip ---------- */
+const tip = $('tip');
+function showTip(html, e) { tip.innerHTML = html; tip.classList.add('show'); moveTip(e); }
+function moveTip(e) { const w = tip.offsetWidth, h = tip.offsetHeight; let x = e.clientX + 14, y = e.clientY + 14; if (x + w > innerWidth - 8) x = e.clientX - w - 14; if (y + h > innerHeight - 8) y = e.clientY - h - 14; tip.style.left = x + 'px'; tip.style.top = y + 'px'; }
+const row = (a, b) => `<div class="row"><span>${a}</span><span>${b}</span></div>`;
+document.addEventListener('mousemove', e => {
+  const s = S[cur], st = stateAt(s, step);
+  const pg = e.target.closest('#pipes .pipe'), ng = e.target.closest('#nodes .node'), bar = e.target.closest('.cmp-bar');
+  if (pg) {
+    const p = s.pipes.find(x => key(x.a, x.b) === pg.dataset.k), u = st.pipe[pg.dataset.k];
+    showTip(`<b>${esc(label(p.a))} ↔ ${esc(label(p.b))}</b>` + (p.active ? row('Load', `${u} / ${p.capacity} units`) + row('Utilisation', pct(100 * u / p.capacity)) + row('A* edge cost', p.cost) + (u >= p.capacity ? `<div style="color:var(--violet);margin-top:4px">At capacity: bottleneck</div>` : '') : `<div style="color:var(--red)">FAILED: excluded from routing</div>` + row('Nominal capacity', p.capacity)), e);
+  } else if (ng) {
+    const id = ng.dataset.id, d = s.districts.find(x => x.id === id), r = s.reservoirs.find(x => x.id === id);
+    if (d) showTip(`<b>${esc(d.label)} district${d.critical ? ' (critical)' : ''}</b>` + row('Demand', d.demand) + row('Received', st.dist[id]) + row('Coverage', pct(100 * st.dist[id] / d.demand)) + row('Priority', d.priority) + `<div class="mini" style="margin-top:4px">Click to inspect routes</div>`, e);
+    else if (r) showTip(`<b>${esc(r.label)}</b>` + row('Initial supply', r.initial) + row('Released', st.res[id]) + row('Remaining', r.initial - st.res[id]), e);
+    else showTip(`<b>${esc(label(id))}</b><div>Junction: routes water, no demand</div>`, e);
+  } else if (bar) {
+    const [n, k, v] = bar.dataset.tip.split('|'); showTip(`<b>${n}</b>` + row(k, v), e);
+  } else tip.classList.remove('show');
+});
+$('net').addEventListener('click', e => {
+  const ng = e.target.closest('#nodes .node');
+  const id = ng?.dataset.id;
+  focus = id && S[cur].districts.some(d => d.id === id) && focus !== id ? id : null;
+  applyFocus();
+});
+$('districts').addEventListener('click', e => { const el = e.target.closest('.district'); if (!el) return; focus = focus === el.dataset.id ? null : el.dataset.id; applyFocus(); });
+
+/* ---------- Playback ---------- */
+function draw() { const s = S[cur], st = stateAt(s, step); updateNetwork(s, st); renderPanels(s, st); if (focus) applyFocus(); }
+function setPlaying(on) {
+  clearInterval(timer); timer = null;
+  if (on) {
+    const N = S[cur].transfers.length;
+    if (step >= N) step = 0;
+    timer = setInterval(() => {
+      if (step >= N) return setPlaying(false);
+      step++; pulse(S[cur].transfers[step - 1]); draw();
+      if (step >= N) setPlaying(false);
+    }, speed);
+  }
+  $('play-ico').textContent = timer ? '❚❚' : '▶';
+  $('play-txt').textContent = timer ? 'Pause' : 'Play';
+  if (!timer) draw();
+}
+$('play').onclick = () => setPlaying(!timer);
+$('replay').onclick = () => { step = 0; setPlaying(true); };
+$('slider').oninput = e => { setPlaying(false); step = +e.target.value; draw(); };
+document.querySelectorAll('.speed button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.speed button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  speed = +b.dataset.speed; if (timer) setPlaying(true);
+});
+
+function select(id, animate) {
+  cur = id; focus = null;
+  if (location.hash.slice(1) !== id) history.replaceState(null, '', '#' + id);
+  document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.id === id));
+  $('scn-desc').textContent = S[id].description;
+  buildNetwork(S[id]); renderInsights(S[id]); renderComparison();
+  step = animate && !reduced ? 0 : S[id].transfers.length;
+  applyFocus(); draw();
+  if (animate && !reduced) setPlaying(true); else setPlaying(false);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input,select,textarea') && e.key !== ' ') return;
+  const N = S[cur].transfers.length;
+  if (/^[1-9]$/.test(e.key) && ORDER[+e.key - 1]) select(ORDER[+e.key - 1], true);
+  else if (e.key === ' ') { e.preventDefault(); setPlaying(!timer); }
+  else if (e.key === 'ArrowRight') { setPlaying(false); step = Math.min(N, step + 1); pulse(S[cur].transfers[step - 1]); draw(); }
+  else if (e.key === 'ArrowLeft') { setPlaying(false); step = Math.max(0, step - 1); draw(); }
+  else if (e.key.toLowerCase() === 'r') { step = 0; setPlaying(true); }
+  else if (e.key === 'Escape') { focus = null; applyFocus(); }
+});
+
+const fromHash = () => S[location.hash.slice(1)] ? location.hash.slice(1) : null;
+addEventListener('hashchange', () => fromHash() && fromHash() !== cur && select(fromHash(), true));
+select(fromHash() || ORDER[0], false);
+</script>
+</body>
+</html>
